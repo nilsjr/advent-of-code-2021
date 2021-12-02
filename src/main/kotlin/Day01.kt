@@ -5,5 +5,12 @@ fun main() {
     it[0] < it[1]
   }
 
-  println("count: $countIncreasedNumbers")
+  println("part1 count: $countIncreasedNumbers")
+
+  val countSumsLargerThanPrev = day01List.windowed(3)
+    .map { it.sum() }
+    .windowed(2)
+    .count { it[0] < it[1] }
+
+  println("part2 count: $countSumsLargerThanPrev")
 }
