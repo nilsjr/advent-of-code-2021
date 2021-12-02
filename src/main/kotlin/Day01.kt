@@ -1,6 +1,6 @@
-val day01List = readInput("Day01").map { it.toInt() }
-
 fun main() {
+  val day01List = readInput("Day01").map { it.toInt() }
+
   val countIncreasedNumbers = day01List.windowed(2).count {
     it[0] < it[1]
   }
