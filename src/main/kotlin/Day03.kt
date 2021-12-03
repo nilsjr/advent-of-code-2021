@@ -4,17 +4,18 @@ fun main() {
   }
 
   part1(inputList)
+  println("- - - - - - - -")
   part2(inputList)
 }
 
 fun part1(inputList: List<List<Int>>) {
+  println("Part 1")
+
   val digits = inputList.first().size - 1
   val binaryResult = mutableListOf<Int>()
 
   for (i in 0..digits) {
-    val zero = inputList.count { it[i] == 0 }
-    val ones = inputList.count { it[i] == 1 }
-    if (zero > ones) binaryResult.add(0) else binaryResult.add(1)
+    binaryResult.add(inputList.mostCommonBit(i))
   }
 
   val gammaRate = binaryResult.joinToString(separator = "").toInt(2)
@@ -27,11 +28,55 @@ fun part1(inputList: List<List<Int>>) {
 }
 
 fun part2(inputList: List<List<Int>>) {
-  val oxygenGeneratorRating = 1
-  val CO2ScrubberRating = 1
+  println("Part 2")
 
-  val result = oxygenGeneratorRating * CO2ScrubberRating
+  val oxygenRating = findOxygenRating(inputList)
+  val scrubberRating = findScrubberRating(inputList)
+
+  println("ratings: $oxygenRating / $scrubberRating")
+
+  val result = oxygenRating * scrubberRating
   println("result=$result")
+}
+
+fun findOxygenRating(list: List<List<Int>>): Int {
+  val digits = list.first().size - 1
+  var filteredList = list
+  var index = 0
+
+  while (filteredList.size > 1 && index <= digits) {
+    val bit = filteredList.mostCommonBit(index)
+    filteredList = filteredList.filter { it[index] == bit }
+    index++
+  }
+
+  return filteredList.first().joinToString(separator = "").toInt(2)
+}
+
+fun findScrubberRating(list: List<List<Int>>): Int {
+  val digits = list.first().size - 1
+  var filteredList = list
+  var index = 0
+
+  while (filteredList.size > 1 && index <= digits) {
+    val bit = filteredList.leastCommonBit(index)
+    filteredList = filteredList.filter { it[index] == bit }
+    index++
+  }
+
+  return filteredList.first().joinToString(separator = "").toInt(2)
+}
+
+private fun List<List<Int>>.mostCommonBit(index: Int): Int {
+  val zero = this.count { it[index] == 0 }
+  val ones = this.count { it[index] == 1 }
+  return if (zero > ones) 0 else 1
+}
+
+private fun List<List<Int>>.leastCommonBit(index: Int): Int {
+  val zero = this.count { it[index] == 0 }
+  val ones = this.count { it[index] == 1 }
+  return if (zero > ones) 1 else 0
 }
 
 private fun List<Int>.flip(): List<Int> = this.map { if (it == 0) 1 else 0 }
