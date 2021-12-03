@@ -4,62 +4,36 @@ fun main() {
   }
 
   part1(inputList)
-  println("- - - - - - - -")
   part2(inputList)
 }
 
 fun part1(inputList: List<List<Int>>) {
-  println("Part 1")
-
-  val digits = inputList.first().size - 1
+  val digits = inputList.first().indices
   val binaryResult = mutableListOf<Int>()
 
-  for (i in 0..digits) {
+  for (i in digits) {
     binaryResult.add(inputList.mostCommonBit(i))
   }
 
   val gammaRate = binaryResult.joinToString(separator = "").toInt(2)
   val epsilonRate = binaryResult.flip().joinToString(separator = "").toInt(2)
-  val result = gammaRate * epsilonRate
 
-  println("gamma=$gammaRate")
-  println("epsilon=$epsilonRate")
-  println("result=$result")
+  println("part 1 result=${gammaRate * epsilonRate}")
 }
 
 fun part2(inputList: List<List<Int>>) {
-  println("Part 2")
-
-  val oxygenRating = findOxygenRating(inputList)
-  val scrubberRating = findScrubberRating(inputList)
-
-  println("ratings: $oxygenRating / $scrubberRating")
-
-  val result = oxygenRating * scrubberRating
-  println("result=$result")
+  val oxygenRating = findRating(inputList, List<List<Int>>::mostCommonBit)
+  val scrubberRating = findRating(inputList, List<List<Int>>::leastCommonBit)
+  println("part 2 result=${oxygenRating * scrubberRating}")
 }
 
-fun findOxygenRating(list: List<List<Int>>): Int {
+fun findRating(list: List<List<Int>>, bitSelector: (list: List<List<Int>>, index: Int) -> Int): Int {
   val digits = list.first().size - 1
   var filteredList = list
   var index = 0
 
   while (filteredList.size > 1 && index <= digits) {
-    val bit = filteredList.mostCommonBit(index)
-    filteredList = filteredList.filter { it[index] == bit }
-    index++
-  }
-
-  return filteredList.first().joinToString(separator = "").toInt(2)
-}
-
-fun findScrubberRating(list: List<List<Int>>): Int {
-  val digits = list.first().size - 1
-  var filteredList = list
-  var index = 0
-
-  while (filteredList.size > 1 && index <= digits) {
-    val bit = filteredList.leastCommonBit(index)
+    val bit = bitSelector(filteredList, index)
     filteredList = filteredList.filter { it[index] == bit }
     index++
   }
@@ -68,15 +42,16 @@ fun findScrubberRating(list: List<List<Int>>): Int {
 }
 
 private fun List<List<Int>>.mostCommonBit(index: Int): Int {
-  val zero = this.count { it[index] == 0 }
-  val ones = this.count { it[index] == 1 }
-  return if (zero > ones) 0 else 1
+  val (zeros, ones) = countBits(index)
+  return if (zeros > ones) 0 else 1
 }
 
 private fun List<List<Int>>.leastCommonBit(index: Int): Int {
-  val zero = this.count { it[index] == 0 }
-  val ones = this.count { it[index] == 1 }
-  return if (zero > ones) 1 else 0
+  val (zeros, ones) = countBits(index)
+  return if (zeros > ones) 1 else 0
 }
+
+private fun List<List<Int>>.countBits(index: Int): Pair<Int, Int> =
+  Pair(count { it[index] == 0 }, count { it[index] == 1 })
 
 private fun List<Int>.flip(): List<Int> = this.map { if (it == 0) 1 else 0 }
