@@ -21,7 +21,8 @@ fun main() {
   }
 
   Day04.part1(inputList.first(), boards)
-//  Day04.part2(inputList)
+  println("- - - - -")
+  Day04.part2(inputList.first(), boards)
 }
 
 object Day04 {
@@ -30,9 +31,7 @@ object Day04 {
     var endInput = -1
 
     inputList.forEach { input ->
-      if (boards.any { it.hasWon() }) {
-        return@forEach
-      }
+      if (boards.any { it.hasWon() }) return@forEach
       boards.forEach { it.mark(input) }
       endInput = input
     }
@@ -43,19 +42,31 @@ object Day04 {
     println("result: $result")
   }
 
-  fun part2(inputList: List<String>) {
-    TODO()
+  fun part2(inputList: List<Int>, boards: List<Board>) {
+    var endInput = -1
+
+    inputList.forEachIndexed { round, input ->
+      if (boards.all { it.hasWon() }) return@forEachIndexed
+      boards.forEach { it.mark(input, round) }
+      endInput = input
+    }
+
+    val lastWinner = boards.maxByOrNull { it.wonRound } ?: error("no last winner ?!")
+    val result = lastWinner.unmarkedSum() * endInput
+
+    println("result: $result")
   }
 }
 
-data class Board(val rows: List<List<BingoNumber>>) {
+data class Board(val rows: List<List<BingoNumber>>, var wonRound: Int = -1) {
 
   fun hasWon() = checkRows() || checkCols()
 
-  fun mark(number: Int) {
+  fun mark(number: Int, round: Int = 0) {
     rows.flatten().forEach {
       if (it.value == number) it.marked = true
     }
+    if (hasWon() && wonRound == -1) wonRound = round
   }
 
   private fun checkRows(): Boolean = rows.any { it.all { number -> number.marked } }
