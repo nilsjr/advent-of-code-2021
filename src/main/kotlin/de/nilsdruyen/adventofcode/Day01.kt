@@ -1,3 +1,7 @@
+package de.nilsdruyen.adventofcode
+
+import de.nilsdruyen.adventofcode.base.readInput
+
 fun main() {
   val day01List = readInput("Day01").map { it.toInt() }
 
