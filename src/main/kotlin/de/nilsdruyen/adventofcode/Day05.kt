@@ -30,31 +30,25 @@ fun main() {
     }
   }.filter { it.points.isNotEmpty() }
 
-  Day05.part1(inputList.filter { !it.isDiagonal })
+  Day05.part1(inputList)
   Day05.part2(inputList)
 }
 
 object Day05 {
 
   fun part1(inputList: List<Line>) {
-    val overlappingPoints = inputList.map { it.points }
-      .flatten()
-      .groupingBy { it }
-      .eachCount()
-      .filter { it.value > 1 }
-
-    println(overlappingPoints.size)
+    println(inputList.filter { !it.isDiagonal }.countOverlappingPoints())
   }
 
   fun part2(inputList: List<Line>) {
-    val overlappingPoints = inputList.map { it.points }
-      .flatten()
-      .groupingBy { it }
-      .eachCount()
-      .filter { it.value > 1 }
-
-    println(overlappingPoints.size)
+    println(inputList.countOverlappingPoints())
   }
+
+  private fun List<Line>.countOverlappingPoints(): Int = map { it.points }
+    .flatten()
+    .groupingBy { it }
+    .eachCount()
+    .filter { it.value > 1 }.size
 }
 
 data class Line(val points: List<Segment>, val isDiagonal: Boolean = false)
