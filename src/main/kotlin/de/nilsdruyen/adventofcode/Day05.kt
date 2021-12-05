@@ -18,13 +18,20 @@ fun main() {
       // vertical line
       Line(xRange.map { Segment(it, y) })
     } else {
-      // diagonal line
-      Line(emptyList())
+      // diagonal line part2
+      if (xRange.size == yRange.size) {
+        val segments = xRange.mapIndexed { index, point ->
+          Segment(point, yRange[index])
+        }
+        Line(segments, true)
+      } else {
+        Line(emptyList())
+      }
     }
   }.filter { it.points.isNotEmpty() }
 
-  Day05.part1(inputList)
-//  Day05.part2(inputList)
+  Day05.part1(inputList.filter { !it.isDiagonal })
+  Day05.part2(inputList)
 }
 
 object Day05 {
@@ -39,20 +46,20 @@ object Day05 {
     println(overlappingPoints.size)
   }
 
-  fun part2(inputList: List<String>) {
-    TODO()
+  fun part2(inputList: List<Line>) {
+    val overlappingPoints = inputList.map { it.points }
+      .flatten()
+      .groupingBy { it }
+      .eachCount()
+      .filter { it.value > 1 }
+
+    println(overlappingPoints.size)
   }
 }
 
-data class Line(
-  val points: List<Segment>
-)
-
-data class Segment(
-  val x: Int,
-  val y: Int,
-)
+data class Line(val points: List<Segment>, val isDiagonal: Boolean = false)
+data class Segment(val x: Int, val y: Int)
 
 fun Pair<Int, Int>.toRangeList(): List<Int> {
-  return if (first > second) (second..first).toList() else (first..second).toList()
+  return if (first > second) (second..first).toList().reversed() else (first..second).toList()
 }
