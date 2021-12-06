@@ -7,20 +7,19 @@ fun main() {
     line.split(",").map { it.toInt() }
   }.flatten().groupBy { it }
 
-  val groups = (0..8).toList().map {
-    inputList.filter { pair ->
-      pair.key == it
-    }.map { it.value }.flatten().count()
+  val groupFishCountByDayState = (0..8).toList().map {
+    // count fishies by internal timer
+    inputList.filter { pair -> pair.key == it }.map { it.value }.flatten().count()
   }.map { it.toULong() }
 
-  Day06.part1(groups)
-  Day06.part2(groups)
+  Day06.part1(groupFishCountByDayState)
+  Day06.part2(groupFishCountByDayState)
 }
 
 object Day06 {
 
   fun part1(inputList: List<ULong>) {
-    var resultList = inputList
+    var resultList = inputList.toList()
 
     repeat(80) { resultList = resultList.processDay() }
 
@@ -28,7 +27,7 @@ object Day06 {
   }
 
   fun part2(inputList: List<ULong>) {
-    var resultList = inputList
+    var resultList = inputList.toList()
 
     repeat(256) { resultList = resultList.processDay() }
 
