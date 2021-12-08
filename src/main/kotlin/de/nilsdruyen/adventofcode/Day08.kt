@@ -3,7 +3,7 @@ package de.nilsdruyen.adventofcode
 import de.nilsdruyen.adventofcode.base.readInput
 
 fun main() {
-  val inputList = readInput("Day08test2").map { line ->
+  val inputList = readInput("Day08").map { line ->
     val (segments, final) = line.split(" | ")
     DisplayGroup(segments.toGroup(), final.toGroup())
   }
@@ -25,14 +25,6 @@ object Day08 {
   }
 
   fun part2(inputList: List<DisplayGroup>) {
-    inputList.forEach { group ->
-      val pattern = group.findSignalPattern()
-      val sum = group.decode(pattern)
-      val str = group.result.map {
-        it.signals.joinToString("")
-      }
-      println("$str : $sum")
-    }
     println("result: ${inputList.sumOf { it.decode(it.findSignalPattern()) }}")
   }
 }
@@ -89,6 +81,17 @@ data class DisplayGroup(val segments: List<DisplaySegment>, val result: List<Dis
           rep[4] = parts.filter { it.second.size > 1 }[0].second.first { it != rep[6] }
         }
         6 -> { // Numbers 0 6 9
+          val six = segments.filter { it.signals.contains(rep[4]) }
+            .filter { it.signals.contains(rep[3]) }
+          try {
+            assert(six.first().signals.sorted().toNumber(rep) != 6)
+          } catch (e: IllegalStateException) {
+            val flip1 = rep[2]
+            val flip2 = rep[5]
+            rep[2] = flip2
+            rep[5] = flip1
+          }
+
           assert(segments.count { !it.signals.contains(rep[4]) } == 1) // check if 0 doesn't contain center line digit
           assert(segments.count { !it.signals.contains(rep[3]) } == 1) // six
           assert(segments.count { !it.signals.contains(rep[4]) } == 1) // nine
@@ -98,9 +101,7 @@ data class DisplayGroup(val segments: List<DisplaySegment>, val result: List<Dis
         }
       }
     }
-    return rep.also {
-      println(rep)
-    }
+    return rep
   }
 
   fun decode(signalPattern: List<String>): Int =
