@@ -13,15 +13,15 @@ fun main() {
 
     if (x == xEnd) {
       // horizontal line
-      Line(yRange.map { Segment(x, it) })
+      Line(yRange.map { LineSegment(x, it) })
     } else if (y == yEnd) {
       // vertical line
-      Line(xRange.map { Segment(it, y) })
+      Line(xRange.map { LineSegment(it, y) })
     } else {
       // diagonal line part2
       if (xRange.size == yRange.size) {
         val segments = xRange.mapIndexed { index, point ->
-          Segment(point, yRange[index])
+          LineSegment(point, yRange[index])
         }
         Line(segments, true)
       } else {
@@ -51,8 +51,8 @@ object Day05 {
     .filter { it.value > 1 }.size
 }
 
-data class Line(val points: List<Segment>, val isDiagonal: Boolean = false)
-data class Segment(val x: Int, val y: Int)
+data class Line(val points: List<LineSegment>, val isDiagonal: Boolean = false)
+data class LineSegment(val x: Int, val y: Int)
 
 fun Pair<Int, Int>.toRangeList(): List<Int> {
   return if (first > second) (second..first).toList().reversed() else (first..second).toList()
