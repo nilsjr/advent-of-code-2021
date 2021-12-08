@@ -19,7 +19,7 @@ object Day08 {
       val uniqueDigits = (0..7).toList().map {
         it to group.segments.count { s -> s.size == it }
       }.filter { it.second == 1 }.map { it.first }
-      group.result.filter { it.size in uniqueDigits }.map(DisplaySegment::signals)
+      group.result.filter { it.size in uniqueDigits }.map { listOf(it) }
     }.sumOf { it.size }
     println("result: $result")
   }
@@ -29,75 +29,63 @@ object Day08 {
   }
 }
 
-fun String.toGroup(): List<DisplaySegment> = split(" ").map {
-  DisplaySegment(it.map { char -> char.toString() })
-}
+typealias DisplaySegment = List<String>
 
-data class DisplaySegment(val signals: List<String>) {
-
-  val size = signals.size
-}
+fun String.toGroup(): List<DisplaySegment> = split(" ").map { it.map(Char::toString) }
 
 data class DisplayGroup(val segments: List<DisplaySegment>, val result: List<DisplaySegment>) {
 
   fun findSignalPattern(): List<String> {
     val rep = MutableList(7) { "" }
-    segments.sortedBy { it.signals.size }.groupBy { it.signals.size }.forEach { (size, segments) ->
+    segments.sortedBy { it.size }.groupBy { it.size }.forEach { (size, segments) ->
       when (size) {
         2 -> { // Number 1
-          val chars = segments.first().signals
+          val chars = segments.first()
           rep[2] = chars[0]
           rep[5] = chars[1]
         }
         3 -> { // Number 7
-          val chars = segments.first().signals
+          val chars = segments.first()
           rep[0] = chars.firstOrNull { it !in rep } ?: ""
         }
         4 -> { // Number 4
-          val chars = segments.first().signals
+          val chars = segments.first()
           val leftChars = chars.filter { it !in rep }
           rep[1] = leftChars[0]
           rep[3] = leftChars[1]
         }
         5 -> { // Numbers 2 3 5
           val parts = segments.map { segment ->
-            segment to segment.signals.filter { it !in rep }
+            segment to segment.filter { it !in rep }
           }.sortedBy { it.second.size }
 
-          val one = listOf(rep[2], rep[5])
-          val three = parts.first { part -> one.all { it in part.first.signals } }
+          val three = parts.first { part -> listOf(rep[2], rep[5]).all { it in part.first } }
 
           rep[6] = parts[0].second[0]
 
           try {
-            assert(three.first.signals.sorted().toNumber(rep) != 3)
+            assert(three.first.sorted().toNumber(rep) != 3)
           } catch (e: IllegalStateException) {
-            val flip1 = rep[1]
-            val flip2 = rep[3]
-            rep[1] = flip2
-            rep[3] = flip1
+            rep.flip(1, 3)
           }
 
           rep[4] = parts.filter { it.second.size > 1 }[0].second.first { it != rep[6] }
         }
         6 -> { // Numbers 0 6 9
-          val six = segments.filter { it.signals.contains(rep[4]) }
-            .filter { it.signals.contains(rep[3]) }
+          // filter 9 & 0
+          val six = segments.filter { it.contains(rep[4]) }.filter { it.contains(rep[3]) }
           try {
-            assert(six.first().signals.sorted().toNumber(rep) != 6)
+            assert(six.first().sorted().toNumber(rep) != 6)
           } catch (e: IllegalStateException) {
-            val flip1 = rep[2]
-            val flip2 = rep[5]
-            rep[2] = flip2
-            rep[5] = flip1
+            rep.flip(2, 5)
           }
 
-          assert(segments.count { !it.signals.contains(rep[4]) } == 1) // check if 0 doesn't contain center line digit
-          assert(segments.count { !it.signals.contains(rep[3]) } == 1) // six
-          assert(segments.count { !it.signals.contains(rep[4]) } == 1) // nine
+          assert(segments.count { !it.contains(rep[4]) } == 1) // check if 0 doesn't contain center line digit
+          assert(segments.count { !it.contains(rep[3]) } == 1) // six
+          assert(segments.count { !it.contains(rep[4]) } == 1) // nine
         }
         7 -> { // Numbers 8
-          assert(rep.sorted() == segments.first().signals.sorted())
+          assert(rep.sorted() == segments.first().sorted())
         }
       }
     }
@@ -105,9 +93,14 @@ data class DisplayGroup(val segments: List<DisplaySegment>, val result: List<Dis
   }
 
   fun decode(signalPattern: List<String>): Int =
-    result.map {
-      it.signals.sorted().toNumber(signalPattern)
-    }.joinToString("").toInt()
+    result.map { it.sorted().toNumber(signalPattern) }.joinToString("").toInt()
+}
+
+fun MutableList<String>.flip(from: Int, to: Int) {
+  val flip1 = this[from]
+  val flip2 = this[to]
+  this[from] = flip2
+  this[to] = flip1
 }
 
 fun List<String>.toNumber(signalPattern: List<String>): Int = when (size) {
