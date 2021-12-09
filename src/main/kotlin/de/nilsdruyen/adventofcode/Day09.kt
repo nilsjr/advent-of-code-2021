@@ -3,81 +3,68 @@ package de.nilsdruyen.adventofcode
 import de.nilsdruyen.adventofcode.base.readInput
 
 fun main() {
-  val inputList = readInput("Day09test").map { line ->
+  val inputList = readInput("Day09").map { line ->
     line.map { it.toString().toInt() }
-  }
+  }.toLocations()
 
   Day09.part1(inputList)
   Day09.part2(inputList)
-
-  // 457164
 }
 
 object Day09 {
 
-  fun part1(inputList: List<List<Int>>) {
-    val projection = inputList.getPositionsForComparison()
-    val numbers = projection.findLowestPoints(inputList)
-    println(numbers.sumOf { it.number + 1 })
+  fun part1(inputList: List<Location>) {
+    val lowestPoints = inputList.filterLowestPoints()
+    println(lowestPoints.sumOf { it.number + 1 })
   }
 
-  fun part2(inputList: List<List<Int>>) {
-    val projection = inputList.getPositionsForComparison()
-    val numbers = projection.findLowestPoints(inputList)
-    val result = numbers.findBasins(inputList)
+  fun part2(inputList: List<Location>) {
+    val lowestPoints = inputList.filterLowestPoints()
+    val result = lowestPoints.findBasins(inputList)
       .map { it.size }
       .sortedDescending()
       .take(3)
-      .also {
-        println(it)
-      }
       .reduce { a, b -> a * b }
 
     println(result)
   }
 }
 
-data class SmokePosition(val number: Int, val x: Int, val y: Int)
+data class Location(val number: Int, val colIndex: Int, val rowIndex: Int)
+data class Basin(val lowest: Location, val size: Int)
 
-data class PositionComparison(
-  val position: SmokePosition,
-  val comparison: List<Pair<Int, Int>>
-)
-
-fun List<PositionComparison>.findLowestPoints(inputList: List<List<Int>>): List<SmokePosition> {
-  return this.filter { position ->
-    val number = position.position.number
-    val minNeighbour = position.comparison.minOfOrNull { inputList[it.first][it.second] } ?: -1
-    number < minNeighbour
-  }.map { it.position }
+fun Location.adjacentLocations(inputList: List<Location>): List<Location> {
+  val width = inputList.maxOf { it.colIndex } + 1
+  val indices = 0 until width
+  return listOf(
+    Pair(colIndex - 1, rowIndex),
+    Pair(colIndex, rowIndex + 1),
+    Pair(colIndex + 1, rowIndex),
+    Pair(colIndex, rowIndex - 1),
+  ).filter { (col, row) -> col in indices && row in indices }
+    .mapNotNull { inputList.getOrNull(it.first + it.second * width) }
 }
 
-fun List<List<Int>>.getPositionsForComparison(): List<PositionComparison> {
-  return this.mapIndexed { rowIndex, colList ->
-    return@mapIndexed colList.mapIndexed { colIndex, number ->
-      val positions = listOfPossiblePositions(rowIndex, colIndex, indices, colList.indices)
-      PositionComparison(SmokePosition(number, rowIndex, colIndex), positions)
-    }
-  }.flatten()
+fun List<List<Int>>.toLocations(): List<Location> = mapIndexed { rowIndex, colList ->
+  colList.mapIndexed { colIndex, number -> Location(number, colIndex, rowIndex) }
+}.flatten()
+
+fun List<Location>.filterLowestPoints(): List<Location> = filter { location ->
+  location.adjacentLocations(this).all { it.number > location.number }
 }
 
-data class Basin(val lowest: SmokePosition, val size: Int)
-
-typealias Location = Pair<Int, Int>
-
-fun List<SmokePosition>.findBasins(inputList: List<List<Int>>): List<Basin> = map { position ->
-  Basin(position, position.findNeighboursForBasin(inputList).distinct().size)
+fun List<Location>.findBasins(inputList: List<Location>): List<Basin> = map { position ->
+  val basinLocations = position.findNeighboursForBasin(inputList)
+  val uniqueBasinLocations = basinLocations.distinct()
+  Basin(position, uniqueBasinLocations.size)
 }
 
-fun SmokePosition.findNeighboursForBasin(inputList: List<List<Int>>): List<Location> {
-  val positions = listOfPossiblePositions(x, y, inputList.indices, inputList.first().indices)
-  val neighbours = positions.map { (x, y) -> SmokePosition(inputList[x][y], x, y) }
-  val validNeighbours = neighbours.filter { it.number < 9 }.filter { number + 1 == it.number }
+fun Location.findNeighboursForBasin(inputList: List<Location>): List<Location> {
+  val neighbours = this.adjacentLocations(inputList)
+  val validNeighbours = neighbours.filter { it.number < 9 }.filter { it.number > number }
   return if (validNeighbours.isNotEmpty()) {
-    validNeighbours.map { it.findNeighboursForBasin(inputList) }.flatten() + Location(x, y)
-  } else listOf(Location(x, y))
+    validNeighbours.map { it.findNeighboursForBasin(inputList) }.flatten()
+  } else {
+    emptyList()
+  } + this
 }
-
-fun listOfPossiblePositions(x: Int, y: Int, rowIndices: IntRange, colIndices: IntRange): List<Location> = listOf(
-  Pair(x - 1, y), Pair(x, y + 1), Pair(x + 1, y), Pair(x, y - 1),
-).filter { (x, y) -> x in rowIndices && y in colIndices }
