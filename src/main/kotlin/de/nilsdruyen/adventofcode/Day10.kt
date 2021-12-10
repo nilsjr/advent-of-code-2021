@@ -23,8 +23,16 @@ object Day10 {
     println(result)
   }
 
-  fun part2(inputList: List<String>) {
-    TODO()
+  fun part2(inputList: List<List<Char>>) {
+    val result = inputList.mapNotNull(List<Char>::incompleteLines)
+      .map(ArrayDeque<Chunk>::reversed)
+      .map {
+        it.fold(0L) { score, chunk ->
+          score * 5 + chunk.incompletePoints
+        }
+      }
+      .sorted()
+    println(result[result.size / 2])
   }
 }
 
