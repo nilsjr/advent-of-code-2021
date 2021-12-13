@@ -3,89 +3,86 @@ package de.nilsdruyen.adventofcode
 import de.nilsdruyen.adventofcode.base.readInput
 
 fun main() {
-  val inputList = readInput("Day11test").mapIndexed { rowIndex, line ->
+  val inputList = readInput("Day11").mapIndexed { rowIndex, line ->
     line.map { it.toString().toInt() }.mapIndexed { colIndex, level ->
-      Octupus(colIndex, rowIndex, level)
+      Octopus(rowIndex, colIndex, level)
     }
   }.flatten()
 
   Day11.part1(inputList)
-//  Day11.part2(inputList)
+  Day11.part2(inputList)
 }
+
+data class Octopus(val rowIndex: Int, val colIndex: Int, var energyLevel: Int)
 
 object Day11 {
 
-  fun part1(inputList: List<Octupus>) {
-    var flashes = 0
-    repeat(2) {
+  fun part1(inputList: List<Octopus>) {
+    val flashes = mutableListOf<Int>()
+    repeat(100) {
       inputList.forEach { it.energyLevel++ }
 
+      var flashCount = 0
       while (inputList.any { it.energyLevel >= 10 }) {
         val flashies = inputList.filter { it.energyLevel >= 10 }
-        flashes += flashies.size
+        flashCount += flashies.size
 
-        flashies.forEach { octupus ->
-          octupus.energyLevel = 0
-          octupus
-            .neighbours(inputList)
+        flashies.forEach { octopus ->
+          octopus.energyLevel = 0
+          octopus
+            .neighbours()
             .mapNotNull { inputList.getOrNull(it) }
             .filter { it.energyLevel != 0 }
             .forEach { it.energyLevel++ }
         }
       }
-
-      inputList.print()
-      println()
+      flashes.add(flashCount)
     }
 
-    val matrix = inputList.windowed(10, 10)
-    println(matrix[0].joinToString("") { it.energyLevel.toString() } == "8807476555")
-    println(matrix[1].joinToString("") { it.energyLevel.toString() } == "5089087054")
-
-    println(flashes)
+    println(flashes.sum())
   }
 
-  fun part2(inputList: List<Octupus>) {
-    TODO()
-  }
-}
+  fun part2(inputList: List<Octopus>) {
+    val flashes = mutableListOf<Int>()
+    while (flashes.none { it == 100 }) {
+      inputList.forEach { it.energyLevel++ }
 
-data class Octupus(
-  val x: Int,
-  val y: Int,
-  var energyLevel: Int,
-)
+      var flashCount = 0
+      while (inputList.any { it.energyLevel >= 10 }) {
+        val flashies = inputList.filter { it.energyLevel >= 10 }
+        flashCount += flashies.size
 
-fun List<List<Octupus>>.forEachOctupus(block: (Octupus) -> Unit) {
-  forEach { row -> row.forEach { block(it) } }
-}
+        flashies.forEach { octopus ->
+          octopus.energyLevel = 0
+          octopus
+            .neighbours()
+            .mapNotNull { inputList.getOrNull(it) }
+            .filter { it.energyLevel != 0 }
+            .forEach { it.energyLevel++ }
+        }
+      }
+      flashes.add(flashCount)
+    }
 
-fun List<List<Octupus>>.filterOctupus(block: (Octupus) -> Boolean) {
-  filter { row -> row.all { block(it) } }
-}
-
-fun List<Octupus>.print() {
-  val width = maxOf { it.y } + 1
-  windowed(width, width).take(3).forEach { list ->
-    println(list.joinToString("") {
-      if (it.energyLevel >= 10) "X" else it.energyLevel.toString()
-    })
+    println(flashes.indexOf(100) + 101) // + 1 (index) + 100 (part 1 steps)
   }
 }
 
-fun Octupus.neighbours(list: List<Octupus>): List<Int> {
-  val width = list.maxOf { it.y } + 1
+fun Octopus.neighbours(): List<Int> {
+  val width = 10
   return listOf(
     // top neighbours
-    (y - 1) + (x - 1) * width,
-    y + (x - 1) * width,
-    (y + 1) + (x - 1) * width,
+    Pair(colIndex - 1, rowIndex - 1),
+    Pair(colIndex, rowIndex - 1),
+    Pair(colIndex + 1, rowIndex - 1),
     // bottom neighbours
-    (y - 1) + (x + 1) * width,
-    y + (x + 1) * width,
-    (y + 1) + (x + 1) * width,
+    Pair(colIndex - 1, rowIndex + 1),
+    Pair(colIndex, rowIndex + 1),
+    Pair(colIndex + 1, rowIndex + 1),
     // left right
-    (y - 1) + x * width,
-    (y + 1) + x * width,
+    Pair(colIndex - 1, rowIndex),
+    Pair(colIndex + 1, rowIndex),
   )
+    .filter { it.first in 0..9 && it.second in 0..9 }
+    .map { it.first + it.second * width }
 }
