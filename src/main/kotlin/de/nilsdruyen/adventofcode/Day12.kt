@@ -61,7 +61,6 @@ fun List<String>.combine(inputMap: Map<String, List<String>>, part2: Boolean): L
   } else {
     availablePoints.filter { it !in visitedSmallCaves }
   }
-
   return possibleCaves.filter { it != START }.map {
     val path = this + it
     if (it == END) listOf(path) else path.combine(inputMap, part2)
