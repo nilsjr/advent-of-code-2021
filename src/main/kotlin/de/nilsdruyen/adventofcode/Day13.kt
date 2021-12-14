@@ -21,14 +21,12 @@ fun main() {
 object Day13 {
 
   fun part1(paper: MutableList<MutableList<Boolean>>, folds: List<Pair<String, String>>) {
-    var foldedPaper = paper
-    foldedPaper = foldedPaper.fold(folds, 1)
+    val foldedPaper = paper.fold(folds, 1)
     println(foldedPaper.sumOf { row -> row.count { it } })
   }
 
   fun part2(paper: MutableList<MutableList<Boolean>>, folds: List<Pair<String, String>>) {
-    var foldedPaper = paper
-    foldedPaper = foldedPaper.fold(folds)
+    val foldedPaper = paper.fold(folds)
     foldedPaper.print()
     println(foldedPaper.sumOf { row -> row.count { it } })
   }
