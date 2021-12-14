@@ -11,7 +11,7 @@ fun main() {
   }.toMap()
 
   Day14.part1(template, insertions)
-//  Day14.part2(template, insertions)
+  Day14.part2(template, insertions)
 }
 
 object Day14 {
@@ -22,7 +22,7 @@ object Day14 {
   }
 
   fun part2(inputList: List<String>, insertions: Map<String, String>) {
-    val charCount = inputList.buildAndCount(insertions, 40)
+    val charCount = inputList.buildAndCount(insertions, 20)
     println(charCount.maxOf { it.value } - charCount.minOf { it.value })
   }
 }
@@ -31,6 +31,7 @@ fun List<String>.buildAndCount(insertions: Map<String, String>, times: Int): Map
   val charCount = mutableMapOf<String, Int>()
 
   forEach { part ->
+    println(part)
     var chunk = part.map { it.toString() }
     repeat(times) {
       chunk = buildList {
@@ -46,6 +47,7 @@ fun List<String>.buildAndCount(insertions: Map<String, String>, times: Int): Map
           }
         }
       }
+      println(it)
     }
     chunk.countChars().forEach { (t, u) ->
       charCount[t] = u + (charCount[t] ?: 0)
